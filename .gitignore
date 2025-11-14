@@ -1,0 +1,21 @@
+# macOS cruft
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment / secrets
+.env
+*.env
+
+# Data & logs (real company data stays local only)
+data/
+logs/
+
+# Databases / local analytics stores
+*.duckdb
+*.sqlite
+*.db
