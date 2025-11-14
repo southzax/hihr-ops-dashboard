@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import requests
 from datetime import datetime
+from storage import save_time_entries_raw
 
 load_dotenv()
 
@@ -60,31 +61,37 @@ def get_projects(workspace_id: str) -> list:
 	return response.json()
     
     
-def get_time_entries(workspace_id: str, start: str, end: str) -> list:
+
+def get_time_entries_for_user(
+    workspace_id: str,
+    user_id: str,
+    start: str,
+    end: str,
+    page_size: int = 1000,
+) -> list:
     """
-    Fetch all time entries in a workspace for a given date range.
+    Fetch time entries for a single user.
+    Uses endpoint:  GET /workspaces/{workspaceId}/user/{userId}/time-entries
     """
-    url = f"{BASE_URL}/workspaces/{workspace_id}/time-entries"
+    url = f"{BASE_URL}/workspaces/{workspace_id}/user/{user_id}/time-entries"
     
-    payload = {
+    params = {
         "start": start,
         "end": end,
-        "hydrated": True
+        "page-size": page_size
     }
     
-    headers = get_headers()
-    headers["Content-Type"] = "application/json"
-    
-    response = requests.post(url, headers=headers, json=payload)
+    response = requests.get(url, headers=get_headers(), params=params)
     response.raise_for_status()
     return response.json()
-    
-    
+
+
     
 if __name__ == "__main__":
     try:
         user = get_user()
         print("User:", user.get("name"), "-", user.get("email"))
+        user_id = user.get("id")
         
         workspaces = get_workspaces()
         print("\nWorkspaces found:")
@@ -95,26 +102,39 @@ if __name__ == "__main__":
         print(f"\nUsing workspace: {workspace_id}")
         
         projects = get_projects(workspace_id)
-        print("\nProjects found in workspace ({len(projects)} total):")
+        print(f"\nProjects found in workspace ({len(projects)} total):")
         for p in projects[:10]:
             print(f"- {p.get('id')} | {p.get('name')}")   
             
-        print("\nTime Entries Sample:")
+        print("\nTime Entries Sample (for current user):")
         start = "2025-01-01T00:00:00Z"
         end = "2025-01-31T23:59:59Z"
         
-        time_entries = get_time_entries(workspace_id, start, end)
+        time_entries = get_time_entries_for_user(workspace_id, user_id, start, end)
+        print(f"Fetched {len(time_entries)} time entries.")
         
-        if time_entries:
-            te = time_entries[0]
-            print("- ID:", te.get("id"))
-            print("- Description:", te.get("description"))
-            print("- Project:", te.get("projectId"))
-            print("- Start:", te.get("timeInterval", {}).get("start"))
-            print("- End:", te.get("timeInterval", {}).get("start"))
-        else:
+        filepath = save_time_entries_raw(time_entries, workspace_id, start, end)
+        print(f"Raw time entries saved to: {filepath}")
+        
+        if not time_entries:
             print("No time entries found for this period.")
-        
+        else:    
+            print("\nSample time entry (raw keys):")
+            te = time_entries[0]
+            print(list(te.keys()))
+                
+            ti = te.get("timeInterval", {}) or {}
+            print("\nTime interval details:")
+            print("Start:", ti.get("start"))
+            print("End:", ti.get("end"))
+            print("Duration:", ti.get("duration"))
+            
+            print("\nOther useful fields:")
+            print("Description:", te.get("description"))
+            print("User ID:", te.get("userId"))
+            print("Project ID:", te.get("projectId"))
+            print("Tag IDs:", te.get("tagIds"))
+            
     except Exception as e:
-        print("Error:", e)
+        print("Unexpected error:", repr(e), "of type", type(e))
         
