@@ -3,6 +3,7 @@ import json
 import pandas as pd
 
 RAW_CLOCKIFY_DIR = Path("data/raw/clockify")
+PROCESSED_CLOCKIFY_DIR = Path("data/processed/clockify")
 
 def load_raw_time_entries(filepath: Path) -> list:
     """Load raw time entry JSON from disk into a Python list."""
@@ -66,6 +67,36 @@ def to_time_entries_dataframe(entries: list) -> pd.DataFrame:
     
 
 
+def ensure_processed_clockify_dir() -> None:
+    """Make sure the processed Clockify data directory exists."""
+    PROCESSED_CLOCKIFY_DIR.mkdir(parents=True, exist_ok=True)
+    
+    
+    
+def save_time_entries_processed(
+    df: pd.DataFrame,
+    workspace_id: str,
+    start: str,
+    end: str
+) -> dict:
+    """Save the processed time entries DataFrame to disk (CSV and PArquet)."""
+    ensure_processed_clockify_dir()
+    
+    start_date = start.split("T")[0]
+    end_date = end.split("T")[0]
+    base_name = f"time_entries_{workspace_id}_{start_date}_to_{end_date}"
+    
+    csv_path = PROCESSED_CLOCKIFY_DIR / f"{base_name}.csv"
+    parquet_path = PROCESSED_CLOCKIFY_DIR / f"{base_name}.parquet"
+    
+    df.to_csv(csv_path, index=False)
+    df.to_parquet(parquet_path, index=False)
+    
+    return {"csv": csv_path, "parquet": parquet_path}
+
+
+
+
 if __name__ == "__main__":
     #COME BACK TO THIS!!!  Just testing for now.
     raw_files = sorted(RAW_CLOCKIFY_DIR.glob("time_entries_*.json"))
@@ -83,6 +114,21 @@ if __name__ == "__main__":
         print("\nSample rows:")
         print(df.head())
         
+        if df.empty:
+            print("\nNo data to save (DataFrame is empty).")
+        else:
+            name_parts = filepath.stem.split("_")
+            workspace_id = name_parts[2]
+            start_date = name_parts[3]
+            end_date = name_parts[5]
+        
+            start = f"{start_date}T00:00:00Z"
+            end = f"{end_date}T23:59:59Z"
+            
+            paths = save_time_entries_processed(df, workspace_id, start, end)
+            print("\nProcessed data saved to:")
+            print("CSV:", paths["csv"])
+            print("Parquet:", paths["parquet"])        
     
     
     
