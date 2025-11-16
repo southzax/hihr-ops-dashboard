@@ -3,6 +3,15 @@ import json
 import pandas as pd
 from clockify_client import get_workspace_id, get_projects, get_users
 
+"""
+This file pulls the raw data files from /data/raw/clockify and better-ify-s them.
+Currently, it puts the data into a DataFrame, generates and merges dimension tables for
+    all users and projects, and then saves the data as CSV and Parquet to
+    data/processed/clockify
+"""
+
+
+
 RAW_CLOCKIFY_DIR = Path("data/raw/clockify")
 PROCESSED_CLOCKIFY_DIR = Path("data/processed/clockify")
 

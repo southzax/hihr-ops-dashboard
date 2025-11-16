@@ -6,6 +6,14 @@ from storage import save_time_entries_raw
 
 load_dotenv()
 
+"""
+This file pulls the raw data from Clockify.
+Currently, it pulls raw time entries for every user in the workspace
+     and saves the raw data in data/raw/clockify
+"""
+
+
+
 BASE_URL = "https://api.clockify.me/api/v1"
 
 def get_api_key() -> str:
@@ -16,12 +24,14 @@ def get_api_key() -> str:
     return api_key
     
     
+    
 def get_workspace_id() -> str:
     """Read the Clockify Workspace ID from the environment variables."""
     workspace_id = os.getenv("CLOCKIFY_WORKSPACE_ID")
     if not workspace_id:
     	raise RuntimeError("CLOCKIFY_WORKSPACE_ID is not set in the environment or .env file")
     return workspace_id
+
 
 
 def get_headers() -> dict:
@@ -31,6 +41,7 @@ def get_headers() -> dict:
     }
     
     
+    
 def get_user() -> dict:
     """Call a simple, safe Clockify endpoint that returns info about the current user."""
     url = f"{BASE_URL}/user"
@@ -38,6 +49,19 @@ def get_user() -> dict:
     response.raise_for_status()
     return response.json()
     
+    
+    
+def get_users(workspace_id: str) -> list:
+	"""
+	Fetch all users in a given workspace.
+	Returns a list of user objects.
+	"""
+	url = f"{BASE_URL}/workspaces/{workspace_id}/users"
+	response = requests.get(url, headers=get_headers())
+	response.raise_for_status()
+	return response.json()    
+
+
     
 def get_workspaces() -> list:
     """
@@ -50,6 +74,7 @@ def get_workspaces() -> list:
     return response.json()
     
     
+    
 def get_projects(workspace_id: str) -> list:
 	"""
 	Fetch all projects in a given workspace.
@@ -60,19 +85,6 @@ def get_projects(workspace_id: str) -> list:
 	response.raise_for_status()
 	return response.json()
     
-    
-
-def get_users(workspace_id: str) -> list:
-	"""
-	Fetch all users in a given workspace.
-	Returns a list of user objects.
-	"""
-	url = f"{BASE_URL}/workspaces/{workspace_id}/users"
-	response = requests.get(url, headers=get_headers())
-	response.raise_for_status()
-	return response.json()
-
-
     
 
 def get_time_entries_for_user(
@@ -99,6 +111,34 @@ def get_time_entries_for_user(
     return response.json()
 
 
+
+def get_time_entries_for_all_users(
+    workspace_id: str,
+    start: str,
+    end: str,
+    page_size: int = 1000,
+) -> list:
+    """
+    Fetch time entries for all users in a workspace.
+    Combines per-suer results into a unified list.
+    """
+    users = get_users(workspace_id)
+    all_entries = []
+    
+    for u in users:
+        user_id = u.get("id")
+        user_name = u.get("name")
+        
+        print(f"Fetching entries for {user_name} ({user_id}).")
+
+        entries = get_time_entries_for_user(workspace_id, user_id, start, end, page_size)
+        
+        all_entries.extend(entries)
+
+    print(f"Total entries fetched for all users: {len(all_entries)}")
+    return all_entries
+
+
     
 if __name__ == "__main__":
     try:
@@ -123,16 +163,16 @@ if __name__ == "__main__":
         print(f"\nUsers in workspace ({len(users)} total):")
         for u in users:
         	print(f"- {u.get('id')} | {u.get('name')} | {u.get('email')}")
-            
-        print("\nTime Entries Sample (for current user):")
+        	
         start = "2025-01-01T00:00:00Z"
         end = "2025-01-31T23:59:59Z"
+        print(f"\nFetching time entries for {start} - {end}.")
         
-        time_entries = get_time_entries_for_user(workspace_id, user_id, start, end)
-        print(f"Fetched {len(time_entries)} time entries.")
+        time_entries = get_time_entries_for_all_users(workspace_id, start, end)
+        print(f"\nFetched {len(time_entries)} time entries.")
         
         filepath = save_time_entries_raw(time_entries, workspace_id, start, end)
-        print(f"Raw time entries saved to: {filepath}")
+        print(f"\nRaw time entries saved to: {filepath}")
         
         if not time_entries:
             print("No time entries found for this period.")

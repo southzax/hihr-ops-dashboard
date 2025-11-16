@@ -11,6 +11,12 @@ venv/
 .env
 *.env
 
+# Ignore real config files
+config/
+# Allow template/example config to be tracked
+!config/README.md
+!config/project_pay_rate_overrides_template.csv
+
 # Data & logs (real company data stays local only)
 data/
 logs/
