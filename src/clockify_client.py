@@ -62,6 +62,19 @@ def get_projects(workspace_id: str) -> list:
     
     
 
+def get_users(workspace_id: str) -> list:
+	"""
+	Fetch all users in a given workspace.
+	Returns a list of user objects.
+	"""
+	url = f"{BASE_URL}/workspaces/{workspace_id}/users"
+	response = requests.get(url, headers=get_headers())
+	response.raise_for_status()
+	return response.json()
+
+
+    
+
 def get_time_entries_for_user(
     workspace_id: str,
     user_id: str,
@@ -105,6 +118,11 @@ if __name__ == "__main__":
         print(f"\nProjects found in workspace ({len(projects)} total):")
         for p in projects[:10]:
             print(f"- {p.get('id')} | {p.get('name')}")   
+            
+        users = get_users(workspace_id)
+        print(f"\nUsers in workspace ({len(users)} total):")
+        for u in users:
+        	print(f"- {u.get('id')} | {u.get('name')} | {u.get('email')}")
             
         print("\nTime Entries Sample (for current user):")
         start = "2025-01-01T00:00:00Z"

@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import pandas as pd
+from clockify_client import get_workspace_id, get_projects, get_users
 
 RAW_CLOCKIFY_DIR = Path("data/raw/clockify")
 PROCESSED_CLOCKIFY_DIR = Path("data/processed/clockify")
@@ -25,7 +26,7 @@ def to_time_entries_dataframe(entries: list) -> pd.DataFrame:
             "workspace_id": te.get("workspaceId"),
             "description": te.get("description"),
             "billable": te.get("billable"),
-            "tag": te.get("tagIDs"),
+            "tag": te.get("tagIDs") or [],
             "start": ti.get("start"),
             "end": ti.get("end"),
             "duration_raw": ti.get("duration"),
@@ -67,6 +68,42 @@ def to_time_entries_dataframe(entries: list) -> pd.DataFrame:
     
 
 
+def to_users_dataframe(users: list) -> pd.DataFrame:
+    """Convert raw Clockify users list into clean dim table."""
+    if not users:
+        return pd.DataFrame()
+        
+    records = []
+    for u in users:
+        records.append({
+            "user_id": u.get("id"),
+            "user_name": u.get("name"),
+            "user_email": u.get("email"),
+            "user_status": u.get("status"),
+        })
+        
+    return pd.DataFrame(records)
+    
+
+def to_projects_dataframe(projects: list) -> pd.DataFrame:
+    """Convert raw Clockify projects list into clean dim table."""
+    if not projects:
+        return pd.DataFrame()
+        
+    records=[]
+    for p in projects:
+        records.append({
+            "project_id": p.get("id"),
+            "project_name": p.get("name"),
+            "client_name": p.get("clientName") or p.get("client", {}).get("name") if isinstance(p.get("client"), dict) else None,
+            "project_archived": p.get("archived"),
+        })
+        
+    return pd.DataFrame(records)
+    
+
+
+
 def ensure_processed_clockify_dir() -> None:
     """Make sure the processed Clockify data directory exists."""
     PROCESSED_CLOCKIFY_DIR.mkdir(parents=True, exist_ok=True)
@@ -88,6 +125,22 @@ def save_time_entries_processed(
     
     csv_path = PROCESSED_CLOCKIFY_DIR / f"{base_name}.csv"
     parquet_path = PROCESSED_CLOCKIFY_DIR / f"{base_name}.parquet"
+    
+    df.to_csv(csv_path, index=False)
+    df.to_parquet(parquet_path, index=False)
+    
+    return {"csv": csv_path, "parquet": parquet_path}
+
+
+def save_dimension(
+    df: pd.DataFrame,
+    name: str,
+) -> dict:
+    """Save dimension DataFrame under data/processed/clockify/"""
+    ensure_processed_clockify_dir()
+    
+    csv_path = PROCESSED_CLOCKIFY_DIR / f"{name}.csv"
+    parquet_path = PROCESSED_CLOCKIFY_DIR / f"{name}.parquet"
     
     df.to_csv(csv_path, index=False)
     df.to_parquet(parquet_path, index=False)
@@ -128,8 +181,33 @@ if __name__ == "__main__":
             paths = save_time_entries_processed(df, workspace_id, start, end)
             print("\nProcessed data saved to:")
             print("CSV:", paths["csv"])
-            print("Parquet:", paths["parquet"])        
-    
+            print("Parquet:", paths["parquet"])     
+            
+            print("\nFetching users and projects for dimensions.")
+            users = get_users(workspace_id)
+            projects = get_projects(workspace_id)
+            
+            dim_users = to_users_dataframe(users)
+            dim_projects = to_projects_dataframe(projects)
+            
+            user_paths = save_dimension(dim_users, "dim_users")
+            project_paths = save_dimension(dim_projects, "dim_projects")
+
+            print("\nDim tables saved to:")
+            print("Users CSV:", user_paths["csv"])
+            print("Users Parquet", user_paths["parquet"])
+            print("Projects CSV:", project_paths["csv"])
+            print("Projects Parquet:", project_paths["parquet"]) 
+            
+            df_with_dims = (
+                df
+                .merge(dim_users, on="user_id", how="left")
+                .merge(dim_projects, on="project_id", how="left")
+            )   
+            
+            print("\nSample rows with user/project names:")
+            print(df_with_dims.head())
+            
     
     
     
