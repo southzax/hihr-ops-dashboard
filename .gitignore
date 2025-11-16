@@ -11,9 +11,9 @@ venv/
 .env
 *.env
 
-# Ignore real config files
-config/
-# Allow template/example config to be tracked
+# Ignore everything in config (so we can ignore real config files)
+config/*
+# Allow template/example config to be tracked (so we have an anonymous version to work with)
 !config/README.md
 !config/project_pay_rate_overrides_template.csv
 

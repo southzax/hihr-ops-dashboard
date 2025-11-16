@@ -1,0 +1,2 @@
+clockify_project_id,clockify_project_name,paycor_employee_id,employee_display_name,paycor_pay_rate_id,paycor_pay_rate_label,notes
+PROJECT_ID_ABC,"Sample Executive Coaching - Client X",EMP001,"Sample Employee","PR2","Executive Coaching Rate","Example override"
