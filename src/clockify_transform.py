@@ -11,7 +11,6 @@ Currently, it puts the data into a DataFrame, generates and merges dimension tab
 """
 
 
-
 RAW_CLOCKIFY_DIR = Path("data/raw/clockify")
 PROCESSED_CLOCKIFY_DIR = Path("data/processed/clockify")
 

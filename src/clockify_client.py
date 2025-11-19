@@ -36,7 +36,7 @@ def get_workspace_id() -> str:
 
 def get_headers() -> dict:
     """Construct the headers required by the Clockify API."""
-    return{
+    return {
         "X-Api-Key": get_api_key()
     }
     
