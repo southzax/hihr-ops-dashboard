@@ -4,6 +4,7 @@ from typing import Any, List
 
 
 RAW_CLOCKIFY_DIR = Path("data/raw/clockify")
+RAW_PAYCOR_DIR = Path("data/raw/paycor")
 
 
 def ensure_raw_clockify_dir() -> None:
@@ -36,3 +37,52 @@ def save_time_entries_raw(
         json.dump(entries, f, indent=2, ensure_ascii=False)
         
     return filepath
+    
+    
+    
+    
+def ensure_raw_paycor_dir() -> None:
+    """Make sure the raw Paycor data directory exists"""
+    RAW_PAYCOR_DIR.mkdir(parents=True, exist_ok=True)
+    
+    
+    
+def save_paycor_employees_raw(employees: dict) -> Path:
+    """
+    Save raw Paycor employee data to a JSON file.
+    -employees_response: the dict returned by get_employees_identifying_data
+    """
+    ensure_raw_paycor_dir()
+    
+    filepath = RAW_PAYCOR_DIR / "employee_identifying_info.json"
+    
+    with filepath.open("w", encoding="utf-8") as f:
+        json.dump(employees, f, indent=2, ensure_ascii=False)
+        
+    return filepath
+    
+    
+    
+def save_paycor_payrates_raw(payrates_by_employee: dict) -> Path:
+    """
+    Save raw payrate history for all employees.
+    payrates_by_employee: {employeeId: [payrate records]} dictionary
+    """
+    ensure_raw_paycor_dir()
+
+    filepath = RAW_PAYCOR_DIR / "payrates_all_employees.json"
+    
+    with filepath.open("w", encoding="utf-8") as f:
+        json.dump(payrates_by_employee, f, indent=2, ensure_ascii=False)
+
+    return filepath
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

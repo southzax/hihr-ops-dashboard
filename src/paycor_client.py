@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
+from typing import Any
 import requests
+from storage import save_paycor_employees_raw, save_paycor_payrates_raw
+
 
 load_dotenv()
 
@@ -16,20 +19,31 @@ def get_paycor_credentials() -> dict:
             "Expected PAYCOR_CLIENT_ID, PAYCOR_COMPANY_ID, PAYCOR_CLIENT_SECRET"
         )
     
-    return {
+    credentials = {
         "client_id": PAYCOR_CLIENT_ID,
         "company_id": PAYCOR_COMPANY_ID,
         "client_secret": PAYCOR_CLIENT_SECRET
     }
     
+    return credentials
+    
 
 
 def get_paycor_headers(access_token: str) -> dict:
     """Construct the headers required by the Paycor API."""
-    return {
+    subscription_key = os.getenv("PAYCOR_APIM_SUBSCRIPTION_KEY")
+    if not subscription_key:
+        raise RuntimeError(
+            "PAYCOR_APIM_SUBSCRIPTION_KEY is not set in the envrionment or .env"
+        )
+        
+    headers = {
         "Authorization": f"Bearer {access_token}",
+        "Ocp-Apim-Subscription-Key": subscription_key,
         "Content-Type": "application/json"
     }
+    
+    return headers
 
 
     
@@ -92,12 +106,6 @@ def get_access_token_from_refresh() -> str:
             "PAYCOR_TOKEN_URL not set in .env"
         )
     
-    subscription_key = os.getenv("PAYCOR_APIM_SUBSCRIPTION_KEY")
-    if not subscription_key:
-        raise RuntimeError(
-            "PAYCOR_APIM_SUBSCRIPTION_KEY not set in .env"
-        )
-    
     refresh_token = os.getenv("PAYCOR_REFRESH_TOKEN")
     if not refresh_token:
         raise RuntimeError(
@@ -111,16 +119,13 @@ def get_access_token_from_refresh() -> str:
         "client_secret": client_secret,
     }
     
-    headers = {
-        "Ocp-Apim-Subscription-Key": subscription_key,
-    }
+    response = requests.post(token_url, data=data)
     
-    response = requests.post(token_url, data=data, headers=headers)
-    
-    """DETELE THIS LATER, JUST FOR DEBUGGING"""
+    """DETELE THIS LATER, JUST FOR DEBUGGING
     if response.status_code >= 400:
         print("Token endpoint returned status:", response.status_code)
         print("Raw response text:", response.text)
+    """
 
     response.raise_for_status()
     
@@ -152,23 +157,95 @@ def paycor_get(path: str, access_token: str, params: dict | None = None) -> dict
     
     response = requests.get(request_url, headers=headers, params=params)
     response.raise_for_status()
-        
+
     return response.json()
+
+    
+
+    
+def get_employees_identifying_data(
+    access_token: str,
+    include_status: list[str] | None = None,
+    continuation_token: str | None = None,
+) -> dict[str, Any]:
+    """
+    Fetch employee data for all employees in the workspace.
+    Uses Paycor's API endpoint /v1/legalentities/{legalEntityId}/employeesIdentifyingData
+    """
+    creds = get_paycor_credentials()
+    legal_entity_id = creds["company_id"]
+    
+    path = f"v1/legalentities/{legal_entity_id}/employeesIdentifyingData"
+    
+    params: dict[str, Any] = {}
+    if include_status:
+        params["include"] = include_status
+    if continuation_token:
+        params["continuationToken"] = continuation_token
+    
+    emp_info =  paycor_get(path, access_token, params=params)
+    
+    return emp_info
+    
+    
+    
+def get_pay_data_for_user(
+    access_token: str,
+    employee_id: str,
+    continuation_token: str | None = None,
+) -> list:
+    """
+    Fetch pay rates for a single user.
+    """
+    creds = get_paycor_credentials()
+    legal_entity_id = creds["company_id"]
+    
+    path = f"v1/employees/{employee_id}/payrates"
+    
+    user_pay_data = paycor_get(path, access_token)
+   
+    return user_pay_data
+
+
+    
+def get_pay_rates_for_all_users(
+    access_token: str,
+    employees: list[dict],
+    continuation_token: str | None = None,
+) -> dict:
+    """
+    Fetch pay rates for all users in a legal entity.
+    Combines results into a unified list.
+    """
+    all_employee_rates = {}
+    
+    for e in employees:
+        e_id = e["employeeId"]
+        all_employee_rates[e_id] = get_pay_data_for_user(access_token, e_id)
+        
+    return all_employee_rates
     
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+if __name__ == "__main__":
+    access_token = get_access_token_from_refresh()
+
+    #Get employees
+    employees_response = get_employees_identifying_data(access_token)
+    employees = employees_response["records"]
+
+    #Save raw employee JSON
+    save_paycor_employees_raw(employees_response)
+
+    #Get payrate history for each employee
+    payrates = get_pay_rates_for_all_users(access_token, employees)
+
+    #Save raw payrate JSON
+    save_paycor_payrates_raw(payrates)
+
+    print("Saved raw Paycor data → data/raw/paycor/")
+
     
     
     

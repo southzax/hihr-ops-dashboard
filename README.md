@@ -13,3 +13,8 @@ Progress so far:
 - Clockify can authenticate with API key from .env, list workspaces and projects, 
 	pull time entires for a single user and date range
 - Raw timeclock data is saved in data/raw/clockify/
+- Timeclock data is cleaned and transformed to DataFrame and dimension tables are
+    built.  Transformed data is saved in csv and parquet formats in data/processed/clockify
+- Paycor can authenticate through API app in Developer Portal.  Generates access token
+    using refresh token from .env
+- Raw employee data and pay rate history saved in data/raw/paycor/
