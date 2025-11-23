@@ -11,10 +11,17 @@ Tech stack: Python, DuckDB/Parquet, and a BI dashboard, plus maybe a Python-base
 
 Progress so far:
 - Clockify can authenticate with API key from .env, list workspaces and projects, 
-	pull time entires for a single user and date range
+	pull time entires for all users in a date range
 - Raw timeclock data is saved in data/raw/clockify/
 - Timeclock data is cleaned and transformed to DataFrame and dimension tables are
     built.  Transformed data is saved in csv and parquet formats in data/processed/clockify
 - Paycor can authenticate through API app in Developer Portal.  Generates access token
-    using refresh token from .env
-- Raw employee data and pay rate history saved in data/raw/paycor/
+    using refresh token from .env, lists employee identifying data and pay rate history
+- Raw employee data and pay rate history is saved in data/raw/paycor/
+- Payrate data is cleaned and transformed to DataFram and dimension tables are built.
+    Transformed data is saved in csv and parquet formats in data/processed/paycor
+
+TODO:
+- Standardize module structure and function naming conventions across the ETL pipeline
+    (clockify, paycor, quickbooks). After QuickBooks pipeline is implemented, refactor to ensure
+    consistent separation of concerns (client calls, raw loaders, transforms, storage, etc.).

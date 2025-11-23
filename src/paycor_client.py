@@ -45,53 +45,6 @@ def get_paycor_headers(access_token: str) -> dict:
     
     return headers
 
-
-    
-def get_access_token() -> str:
-    """
-    DELETE LATER?
-    This one didn't quite work--I don't think we need this one anymore, but leaving here for now.
-    Request an OAuth access token from Paycor using client credentials.
-    """
-    
-    creds = get_paycor_credentials()
-    client_id = creds["client_id"]
-    client_secret = creds["client_secret"]
-    
-    token_url = os.getenv("PAYCOR_TOKEN_URL")
-    if not token_url:
-        raise RuntimeError("Paycor token url not set in .env file")
-     
-    data = {
-        "grant_type":  "client_credentials",
-        "client_id": client_id,
-        "client_secret": client_secret
-    }
-            
-    scope = os.getenv("PAYCOR_SCOPE")
-    subscription_key = os.getenv("PAYCOR_APIM_SUBSCRIPTION_KEY")
-    if not subscription_key:
-        raise RuntimeError("PAYCOR_APIM_SUBSCRIPTION_KEY not set in environment or .env")
-   
-    if scope:
-        data["scope"] = scope
-        
-    headers = {
-        "Ocp-Apim-Subscription-Key": subscription_key,
-    }
-        
-    response = requests.post(token_url, data=data)
-    response.raise_for_status()
-    
-    token_data = response.json()
-    access_token = token_data.get("access_token")
-    if not access_token:
-        raise RuntimeError(
-            f"Token endpoint did not return access_token.  Response was: {token_data}"
-        )
-            
-    return access_token
-    
     
     
 def get_access_token_from_refresh() -> str:
@@ -225,7 +178,7 @@ def get_pay_rates_for_all_users(
         
     return all_employee_rates
     
-    
+
     
     
 if __name__ == "__main__":
@@ -243,6 +196,9 @@ if __name__ == "__main__":
 
     #Save raw payrate JSON
     save_paycor_payrates_raw(payrates)
+
+    #Save dim tables
+
 
     print("Saved raw Paycor data → data/raw/paycor/")
 

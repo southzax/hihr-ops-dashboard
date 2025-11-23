@@ -5,13 +5,14 @@ from typing import Any, List
 
 RAW_CLOCKIFY_DIR = Path("data/raw/clockify")
 RAW_PAYCOR_DIR = Path("data/raw/paycor")
+PROCESSED_PAYCOR_DIR = Path("data/processed/paycor")
 
 
 def ensure_raw_clockify_dir() -> None:
     """Make sure the raw Clockify data directory exists"""
     RAW_CLOCKIFY_DIR.mkdir(parents=True, exist_ok=True)
-    
-    
+
+
 def save_time_entries_raw(
     entries: List[dict],
     workspace_id: str,
@@ -44,8 +45,7 @@ def save_time_entries_raw(
 def ensure_raw_paycor_dir() -> None:
     """Make sure the raw Paycor data directory exists"""
     RAW_PAYCOR_DIR.mkdir(parents=True, exist_ok=True)
-    
-    
+
     
 def save_paycor_employees_raw(employees: dict) -> Path:
     """
@@ -76,9 +76,23 @@ def save_paycor_payrates_raw(payrates_by_employee: dict) -> Path:
         json.dump(payrates_by_employee, f, indent=2, ensure_ascii=False)
 
     return filepath
-    
-    
-    
+
+
+def ensure_processed_paycor_dir():
+    """Make sure the processed Paycor data directory exists"""
+    PROCESSED_PAYCOR_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def save_paycor_file_processed(df, name: str) -> None:
+    """Save processed paycor file as CSV and Parquet"""
+    ensure_processed_paycor_dir()
+    csv_path = PROCESSED_PAYCOR_DIR / f"{name}.csv"
+    parquet_path = PROCESSED_PAYCOR_DIR / f"{name}.parquet"
+
+    df.to_csv(csv_path, index=False)
+    df.to_parquet(parquet_path, index=False)
+
+
     
     
     

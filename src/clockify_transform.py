@@ -17,7 +17,9 @@ PROCESSED_CLOCKIFY_DIR = Path("data/processed/clockify")
 def load_raw_time_entries(filepath: Path) -> list:
     """Load raw time entry JSON from disk into a Python list."""
     with filepath.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        return json.load(f)        
+      
+        
         
 def to_time_entries_dataframe(entries: list) -> pd.DataFrame:
     """Convert a list of time dicts to DataFrame with important keys."""
