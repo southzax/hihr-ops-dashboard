@@ -1,0 +1,19 @@
+{
+  "hasMoreResults": false,
+  "records": [
+    {
+      "id": "pc-emp-1",
+      "firstName": "Alex",
+      "lastName": "Rivera",
+      "status": "Active",
+      "workEmail": "alex.rivera@example.com"
+    },
+    {
+      "id": "pc-emp-2",
+      "firstName": "Jordan",
+      "lastName": "Lee",
+      "status": "Active",
+      "workEmail": "jordan.lee@example.com"
+    }
+  ]
+}

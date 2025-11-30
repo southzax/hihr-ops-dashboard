@@ -1,0 +1,44 @@
+[
+  {
+    "id": "te-001",
+    "userId": "clk-user-1",
+    "projectId": "clk-proj-1",
+    "workspaceId": "demo-workspace",
+    "description": "HR strategy session",
+    "billable": true,
+    "tagIDs": ["tag-billable"],
+    "timeInterval": {
+      "start": "2025-01-10T14:00:00Z",
+      "end": "2025-01-10T16:00:00Z",
+      "duration": "PT2H"
+    }
+  },
+  {
+    "id": "te-002",
+    "userId": "clk-user-1",
+    "projectId": "clk-proj-2",
+    "workspaceId": "demo-workspace",
+    "description": "Internal planning",
+    "billable": false,
+    "tagIDs": ["tag-internal"],
+    "timeInterval": {
+      "start": "2025-01-11T13:00:00Z",
+      "end": "2025-01-11T14:30:00Z",
+      "duration": "PT1H30M"
+    }
+  },
+  {
+    "id": "te-003",
+    "userId": "clk-user-2",
+    "projectId": "clk-proj-1",
+    "workspaceId": "demo-workspace",
+    "description": "Client training",
+    "billable": true,
+    "tagIDs": [],
+    "timeInterval": {
+      "start": "2025-01-12T15:00:00Z",
+      "end": "2025-01-12T17:15:00Z",
+      "duration": "PT2H15M"
+    }
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "pc-emp-1": {
+    "records": [
+      {
+        "id": "rate-001",
+        "effectiveStartDate": "2024-01-01T00:00:00",
+        "effectiveEndDate": null,
+        "sequenceNumber": 1,
+        "payRate": 45.00,
+        "annualPayRate": 93600.0,
+        "description": "Base hourly rate",
+        "type": "Hourly",
+        "reason": "Initial hire",
+        "notes": "",
+        "employees": {
+          "id": "pc-emp-1",
+          "url": "https://api.paycor.com/v1/employees/pc-emp-1"
+        }
+      }
+    ]
+  },
+  "pc-emp-2": {
+    "records": [
+      {
+        "id": "rate-002",
+        "effectiveStartDate": "2024-06-01T00:00:00",
+        "effectiveEndDate": null,
+        "sequenceNumber": 1,
+        "payRate": 60.00,
+        "annualPayRate": 124800.0,
+        "description": "Senior consultant rate",
+        "type": "Hourly",
+        "reason": "Promotion",
+        "notes": "",
+        "employees": {
+          "id": "pc-emp-2",
+          "url": "https://api.paycor.com/v1/employees/pc-emp-2"
+        }
+      }
+    ]
+  }
+}
