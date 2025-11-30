@@ -25,3 +25,5 @@ TODO:
 - Standardize module structure and function naming conventions across the ETL pipeline
     (clockify, paycor, quickbooks). After QuickBooks pipeline is implemented, refactor to ensure
     consistent separation of concerns (client calls, raw loaders, transforms, storage, etc.).
+- Expand Paycor employee_identifying_info.csv to include inactive/terminated employees
+- Configure override pay rates for special projects--add information for archived projects.

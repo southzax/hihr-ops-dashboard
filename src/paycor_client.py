@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 from typing import Any
 import requests
-from storage import save_paycor_employees_raw, save_paycor_payrates_raw
-
+from storage import save_paycor_employees_raw, save_paycor_payrates_raw, save_paycor_payruns_raw, save_employee_earnings
+from datetime import datetime
 
 load_dotenv()
 
@@ -109,7 +109,12 @@ def paycor_get(path: str, access_token: str, params: dict | None = None) -> dict
     headers = get_paycor_headers(access_token)
     
     response = requests.get(request_url, headers=headers, params=params)
-    response.raise_for_status()
+
+    """Debugging helper, delete later:"""
+    if not response.ok:
+        print("Paycor GET error:", response.status_code, response.text)
+
+    #response.raise_for_status()
 
     return response.json()
 
@@ -177,9 +182,34 @@ def get_pay_rates_for_all_users(
         all_employee_rates[e_id] = get_pay_data_for_user(access_token, e_id)
         
     return all_employee_rates
-    
 
-    
+
+"""WRONG API ENDPOINT for the fucntion below -- come back to this!!"""
+
+def get_payruns(
+        access_token: str,
+        continuation_token: str | None = None,
+) -> dict:
+    """Returns payrun data for a date range."""
+
+    creds = get_paycor_credentials()
+    legal_entity_id = creds["company_id"]
+
+    path = f"v1/legalentities/{legal_entity_id}/paydata"
+
+    params = {
+        "fromCheckDate": start,
+        "toCheckDate": end,
+    }
+
+    if continuation_token:
+        params["continuationToken"] = continuation_token
+
+    payrun = paycor_get(path, access_token, params=params)
+
+    return payrun
+
+
     
 if __name__ == "__main__":
     access_token = get_access_token_from_refresh()
@@ -197,8 +227,12 @@ if __name__ == "__main__":
     #Save raw payrate JSON
     save_paycor_payrates_raw(payrates)
 
-    #Save dim tables
+    #Get raw payruns
+    start = "2025-01-01T00:00:00Z"
+    end = "2025-01-31T23:59:59Z"
+    payruns = get_payruns(access_token)
 
+    save_paycor_payruns_raw(payruns)
 
     print("Saved raw Paycor data → data/raw/paycor/")
 

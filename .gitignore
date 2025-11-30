@@ -25,3 +25,6 @@ logs/
 *.duckdb
 *.sqlite
 *.db
+
+# Ignore JetBrains IDE settings
+.idea/

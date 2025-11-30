@@ -78,6 +78,29 @@ def save_paycor_payrates_raw(payrates_by_employee: dict) -> Path:
     return filepath
 
 
+def save_paycor_payruns_raw(payruns: dict) -> Path:
+    """Save raw Paycor payrun data to a JSON file."""
+    ensure_raw_clockify_dir()
+    filepath = RAW_PAYCOR_DIR / "payruns.json"
+
+    with filepath.open("w", encoding="utf-8") as f:
+        json.dump(payruns, f, indent=2, ensure_ascii=False)
+
+    return filepath
+
+
+def save_employee_earnings(earnings: dict) -> Path:
+    """Save raw Paycor payrun data to a JSON file."""
+    ensure_raw_clockify_dir()
+    filepath = RAW_PAYCOR_DIR / "earnings.json"
+
+    with filepath.open("w", encoding="utf-8") as f:
+        json.dump(payruns, f, indent=2, ensure_ascii=False)
+
+    return filepath
+
+
+
 def ensure_processed_paycor_dir():
     """Make sure the processed Paycor data directory exists"""
     PROCESSED_PAYCOR_DIR.mkdir(parents=True, exist_ok=True)
