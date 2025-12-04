@@ -6,8 +6,8 @@ Internal project, rebuilding old pipeline/process better:
 - Transform it into a unified analytics model (employees, clients, projects)
 - Power an interactive dashboard to show cost, revenue, and margin by client, employee, and project.
 
-Tech stack: Python, DuckDB/Parquet, and a BI dashboard, plus maybe a Python-based dashboard (e.g. Streamlit) for new experience
-
+Note:  Data from Clockify and Paycor is confidential and ignored by git.  Demo data
+is a small made-up data sample with the same schema as the authentic data.
 
 Progress so far:
 - Clockify can authenticate with API key from .env, list workspaces and projects, 
@@ -18,8 +18,10 @@ Progress so far:
 - Paycor can authenticate through API app in Developer Portal.  Generates access token
     using refresh token from .env, lists employee identifying data and pay rate history
 - Raw employee data and pay rate history is saved in data/raw/paycor/
-- Payrate data is cleaned and transformed to DataFram and dimension tables are built.
+- Payrate data is cleaned and transformed to DataFrame and dimension tables are built.
     Transformed data is saved in csv and parquet formats in data/processed/paycor
+- Processed data is unified, using immutable keys to connect Paycor users with Clockify users.
+
 
 TODO:
 - Standardize module structure and function naming conventions across the ETL pipeline
